@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SevenEdu — Mobile Prototype</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #FFB800;
+            --primary-light: #FFD700;
+            --primary-dark: #CC9200;
+            --primary-glow: rgba(255,184,0,0.15);
+            --bg: #FFFFFF;
+            --bg-alt: #F9FAFB;
+            --text-main: #1A1C1E;
+            --text-muted: #6C7278;
+            --white: #FFFFFF;
+            --shadow: 0 10px 25px rgba(255,184,0,0.12);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 10px;
+            --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+            --green: #22C55E;
+            --red: #EF4444;
+            --blue: #3B82F6;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Plus Jakarta Sans',sans-serif; -webkit-tap-highlight-color:transparent; }
+        body { background:#D1D5DB; display:flex; justify-content:center; align-items:flex-start; min-height:100vh; padding:24px 0; }
+
+        /* ── PHONE SHELL ── */
+        .app-container {
+            width:350px; min-height:700px; background:var(--bg);
+            border-radius:40px; position:relative; overflow:hidden;
+            box-shadow:0 30px 60px rgba(0,0,0,0.25);
+            border:8px solid #1A1C1E;
+            display:flex; flex-direction:column;
+        }
+        .notch { position:absolute; top:0; left:50%; transform:translateX(-50%); width:130px; height:28px; background:#1A1C1E; border-bottom-left-radius:18px; border-bottom-right-radius:18px; z-index:100; }
+        .status-bar { height:38px; padding:0 24px; display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:700; color:var(--text-main); margin-top:8px; flex-shrink:0; }
+        .status-icons { display:flex; gap:6px; align-items:center; }
+
+        /* ── HEADER ── */
+        .app-header { padding:8px 20px; display:flex; align-items:center; justify-content:space-between; z-index:50; flex-shrink:0; }
+        .back-btn { width:38px; height:38px; border-radius:19px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-main); background:var(--bg-alt); border:none; }
+        .header-title { font-size:16px; font-weight:800; color:var(--text-main); }
+
+        /* ── SCROLL AREA ── */
+        .screen-wrapper { flex:1; overflow-y:auto; padding:0 20px 85px 20px; scrollbar-width:none; }
+        .screen-wrapper::-webkit-scrollbar { display:none; }
+        .screen { display:none; animation:fadeIn 0.35s ease; }
+        .screen.active { display:block; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+        /* ── TYPOGRAPHY ── */
+        h1 { font-size:22px; font-weight:800; color:var(--text-main); }
+        h2 { font-size:18px; font-weight:700; color:var(--text-main); }
+        p  { font-size:13px; color:var(--text-muted); line-height:1.5; }
+
+        /* ── BUTTONS ── */
+        .btn { width:100%; padding:14px; border-radius:var(--radius-md); border:none; font-weight:700; font-size:14px; cursor:pointer; transition:var(--transition); display:flex; align-items:center; justify-content:center; gap:8px; }
+        .btn-primary { background:var(--primary); color:var(--text-main); }
+        .btn-primary:hover { transform:scale(0.98); background:var(--primary-dark); }
+        .btn-outline { background:transparent; border:2px solid #EEE; color:var(--text-main); }
+        .btn-danger  { background:#FFF0F0; border:2px solid #FFE5E5; color:#EF4444; }
+        .btn-sm { padding:8px 16px; font-size:12px; border-radius:var(--radius-sm); width:auto; }
+
+        /* ── CARDS ── */
+        .card { background:var(--bg-alt); border-radius:var(--radius-md); padding:16px; border:1px solid #EEE; margin-bottom:12px; transition:var(--transition); }
+        .card:hover { border-color:var(--primary); }
+        .card-row { display:flex; align-items:center; gap:12px; cursor:pointer; }
+        .icon-box { width:44px; height:44px; background:var(--white); border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--primary); box-shadow:0 2px 8px rgba(0,0,0,0.06); flex-shrink:0; }
+        .icon-box.sm { width:34px; height:34px; border-radius:10px; }
+
+        /* ── BADGE ── */
+        .badge { padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; display:inline-block; }
+        .badge-yellow { background:var(--primary-glow); color:#A07000; }
+        .badge-green  { background:#DCFCE7; color:#15803D; }
+        .badge-red    { background:#FEE2E2; color:#B91C1C; }
+        .badge-blue   { background:#EFF6FF; color:#1D4ED8; }
+
+        /* ── BOTTOM NAV ── */
+        .bottom-nav { position:absolute; bottom:0; width:100%; height:72px; background:var(--white); display:flex; justify-content:space-around; align-items:center; border-top:1px solid #F0F0F0; padding-bottom:8px; z-index:10; }
+        .nav-item { color:#C0C0C0; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; transition:var(--transition); padding:4px 10px; border-radius:12px; }
+        .nav-item.active { color:var(--primary); }
+        .nav-item span { font-size:9px; font-weight:700; }
+        .nav-dot { width:6px; height:6px; border-radius:50%; background:var(--red); position:absolute; top:-2px; right:-2px; }
+
+        /* ── AVATAR ── */
+        .avatar { width:44px; height:44px; border-radius:22px; background:#F0F0F0; display:flex; align-items:center; justify-content:center; border:2px solid var(--white); overflow:hidden; flex-shrink:0; }
+
+        /* ── RANK ITEM ── */
+        .rank-item { display:flex; align-items:center; gap:10px; padding:12px; background:var(--white); border-radius:var(--radius-md); margin-bottom:8px; border:1px solid #F0F0F0; transition:var(--transition); }
+        .rank-item.me { border-color:var(--primary); background:rgba(255,184,0,0.05); }
+        .rank-num { width:22px; font-weight:800; color:var(--text-muted); font-size:13px; text-align:center; }
+        .rank-info { flex:1; }
+        .rank-info strong { display:block; font-size:13px; font-weight:700; }
+        .rank-info small { font-size:11px; color:var(--text-muted); }
+        .rank-score { font-weight:800; color:var(--primary); font-size:14px; }
+
+        /* ── GAME CARD ── */
+        .game-card { background:var(--white); padding:14px; border-radius:var(--radius-md); margin-bottom:10px; border:1px solid #EEE; display:flex; align-items:center; gap:14px; cursor:pointer; transition:var(--transition); }
+        .game-card:hover { border-color:var(--primary); transform:translateX(4px); box-shadow:var(--shadow); }
+        .game-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+
+        /* ── STATS GRID ── */
+        .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+        .stat-card { background:var(--bg-alt); padding:14px; border-radius:var(--radius-md); border:1px solid #EEE; text-align:center; }
+        .stat-card strong { display:block; font-size:18px; font-weight:800; color:var(--primary); }
+        .stat-card small { color:var(--text-muted); font-size:10px; font-weight:600; letter-spacing:.5px; }
+
+        /* ── LANG GRID ── */
+        .lang-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+        .lang-card { background:var(--white); padding:14px; border-radius:var(--radius-md); border:1px solid #EEE; text-align:center; cursor:pointer; transition:var(--transition); }
+        .lang-card:hover { border-color:var(--primary); transform:translateY(-2px); }
+        .lang-card img { width:32px; height:22px; border-radius:3px; margin-bottom:6px; }
+        .lang-card span { display:block; font-size:12px; font-weight:700; }
+
+        /* ── ACTIVITY HEATMAP ── */
+        .heatmap { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+        .heat-cell { aspect-ratio:1; border-radius:4px; background:#F0F0F0; }
+        .heat-cell.active { background:var(--primary); }
+        .heat-cell.semi  { background:rgba(255,184,0,0.4); }
+        .heat-cell.light { background:rgba(255,184,0,0.2); }
+
+        /* ── AUTH FORMS ── */
+        .auth-tab-bar { display:flex; background:#F0F0F0; border-radius:14px; padding:4px; margin-bottom:20px; }
+        .auth-tab { flex:1; padding:10px; text-align:center; font-size:13px; font-weight:700; border-radius:12px; cursor:pointer; color:var(--text-muted); transition:var(--transition); }
+        .auth-tab.active { background:var(--white); color:var(--primary); box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+        .auth-form { display:none; }
+        .auth-form.active { display:block; }
+        .input-group { margin-bottom:12px; }
+        .input-group label { display:block; font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:5px; letter-spacing:.4px; }
+        .input-group input { width:100%; padding:13px 14px; border-radius:var(--radius-sm); border:2px solid #EEE; font-size:13px; font-family:inherit; color:var(--text-main); outline:none; transition:var(--transition); background:var(--white); }
+        .input-group input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(255,184,0,0.12); }
+        .input-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .divider { display:flex; align-items:center; gap:10px; margin:14px 0; }
+        .divider::before,.divider::after { content:''; flex:1; height:1px; background:#EEE; }
+        .divider span { font-size:11px; color:var(--text-muted); font-weight:600; }
+
+        /* ── DUOLINGO ROADMAP ── */
+        .duo-path { padding:20px 0 30px; position:relative; }
+        .duo-section-header { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); border-radius:var(--radius-md); padding:12px 16px; margin:20px 0 24px; display:flex; align-items:center; gap:10px; }
+        .duo-section-header span { font-size:13px; font-weight:800; color:#fff; }
+        .duo-section-header small { font-size:10px; color:rgba(255,255,255,0.8); display:block; }
+        .duo-row { display:flex; justify-content:center; margin-bottom:0; position:relative; }
+        .duo-row::after { content:''; position:absolute; bottom:-28px; left:50%; width:3px; height:28px; background:#E5E7EB; border-radius:2px; transform:translateX(-50%); }
+        .duo-row:last-child::after { display:none; }
+        .duo-row.left  { justify-content:flex-start; padding-left:30px; }
+        .duo-row.right { justify-content:flex-end;  padding-right:30px; }
+        .duo-row.left::after  { left:68px; transform:none; }
+        .duo-row.right::after { left:auto; right:58px; transform:none; }
+        .duo-node { width:70px; height:70px; border-radius:35px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:var(--transition); position:relative; border:none; outline:none; margin-bottom:28px; }
+        .duo-node:hover { transform:scale(1.1); }
+        .duo-node .node-icon { font-size:26px; line-height:1; }
+        .duo-node .node-stars { font-size:9px; margin-top:2px; }
+
+        /* Done state */
+        .duo-node.done { background:var(--green); box-shadow:0 6px 16px rgba(34,197,94,0.35); }
+        .duo-node.done .node-icon { filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+
+        /* Current / active */
+        .duo-node.current { background:var(--primary); box-shadow:0 6px 20px rgba(255,184,0,0.5); animation:nodePulse 2s ease-in-out infinite; }
+        @keyframes nodePulse { 0%,100%{box-shadow:0 6px 20px rgba(255,184,0,0.5)} 50%{box-shadow:0 6px 32px rgba(255,184,0,0.8),0 0 0 8px rgba(255,184,0,0.15)} }
+
+        /* Locked */
+        .duo-node.locked { background:#E5E7EB; box-shadow:0 4px 10px rgba(0,0,0,0.08); cursor:default; }
+        .duo-node.locked:hover { transform:none; }
+        .duo-node.locked .node-icon { opacity:0.45; }
+
+        /* Bonus / chest */
+        .duo-node.bonus { background:linear-gradient(135deg,#F59E0B,#FBBF24); box-shadow:0 6px 20px rgba(245,158,11,0.4); }
+
+        /* Connector line between offset nodes */
+        .duo-connector { height:28px; display:flex; align-items:center; justify-content:center; }
+        .duo-connector-line { width:3px; height:100%; background:#E5E7EB; border-radius:2px; }
+        .duo-connector-line.done { background:var(--green); opacity:0.5; }
+
+        /* Node tooltip bubble */
+        .node-bubble { position:absolute; bottom:78px; left:50%; transform:translateX(-50%); background:var(--text-main); color:#fff; font-size:11px; font-weight:700; padding:6px 12px; border-radius:10px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.2s; z-index:20; }
+        .node-bubble::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:var(--text-main); }
+        .duo-node:hover .node-bubble { opacity:1; }
+
+        /* ── PROGRESS BAR ── */
+        .progress-track { background:#F0F0F0; border-radius:8px; height:8px; overflow:hidden; }
+        .progress-fill  { height:100%; background:var(--primary); border-radius:8px; transition:width 1s ease; }
+
+        /* ── WAVEFORM ── */
+        .waveform { display:flex; align-items:center; gap:4px; height:50px; justify-content:center; }
+        .wave-bar { width:4px; background:var(--primary); border-radius:2px; }
+        .wave-bar.anim { animation:wave 1.2s ease-in-out infinite; }
+        @keyframes wave { 0%,100%{height:8px} 50%{height:38px} }
+
+        /* ── MEMORY CARD GAME ── */
+        .mem-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+        .mem-card { aspect-ratio:0.8; border-radius:10px; border:2px solid #EEE; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; font-size:22px; font-weight:700; transition:var(--transition); background:var(--white); }
+        .mem-card.flipped { border-color:var(--primary); background:var(--primary-glow); }
+        .mem-card.matched { border-color:var(--green); background:#DCFCE7; }
+
+        /* ── FALLING WORD ── */
+        .fall-area { height:200px; border:2px dashed #EEE; border-radius:var(--radius-md); position:relative; overflow:hidden; background:var(--bg-alt); }
+        .falling-item { position:absolute; font-size:32px; animation:falling 3s linear; }
+        @keyframes falling { from{top:-40px} to{top:100%} }
+        .options-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+        .option-btn { padding:12px; border-radius:var(--radius-sm); border:2px solid #EEE; background:var(--white); font-weight:700; font-size:13px; cursor:pointer; transition:var(--transition); text-align:center; }
+        .option-btn:hover { border-color:var(--primary); background:var(--primary-glow); }
+        .option-btn.correct { border-color:var(--green); background:#DCFCE7; }
+        .option-btn.wrong   { border-color:var(--red);   background:#FEE2E2; }
+
+        /* ── 1VS1 DUEL ── */
+        .duel-vs { display:flex; align-items:center; gap:10px; justify-content:center; margin:20px 0; }
+        .duel-player { text-align:center; flex:1; }
+        .duel-player .avatar { margin:0 auto 6px; width:56px; height:56px; border-radius:28px; }
+        .vs-badge { font-size:20px; font-weight:900; color:var(--primary); }
+        .duel-progress { flex:1; }
+        .duel-q { background:var(--bg-alt); border-radius:var(--radius-md); padding:16px; margin-bottom:12px; text-align:center; }
+        .duel-q h2 { font-size:22px; margin-bottom:6px; }
+
+        /* ── SPEAKING SCREEN ── */
+        .speak-circle { width:110px; height:110px; border-radius:55px; background:var(--primary-glow); border:4px solid var(--primary); display:flex; align-items:center; justify-content:center; margin:0 auto; transition:var(--transition); cursor:pointer; }
+        .speak-circle.recording { background:rgba(255,184,0,0.3); box-shadow:0 0 0 12px rgba(255,184,0,0.1); }
+        .speak-bubble { background:var(--bg-alt); border-radius:var(--radius-md) var(--radius-md) var(--radius-md) 4px; padding:12px 16px; margin-bottom:10px; }
+        .speak-bubble.user { background:var(--primary-glow); border-radius:var(--radius-md) var(--radius-md) 4px var(--radius-md); text-align:right; }
+
+        /* ── PREMIUM SCREEN ── */
+        .premium-hero { background:linear-gradient(135deg, var(--primary), var(--primary-dark)); border-radius:var(--radius-lg); padding:24px; text-align:center; color:var(--text-main); margin-bottom:16px; }
+        .premium-hero h1 { color:#fff; font-size:26px; }
+        .premium-feature { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #EEE; }
+        .premium-feature:last-child { border:none; }
+        .pf-icon { font-size:22px; }
+        .coin-pill { background:var(--primary-glow); border:1px solid var(--primary); border-radius:20px; padding:6px 14px; font-size:12px; font-weight:800; color:var(--primary-dark); display:inline-flex; align-items:center; gap:4px; }
+
+        /* ── NOTIFICATION ITEM ── */
+        .notif-item { display:flex; gap:10px; padding:12px; border-radius:var(--radius-md); margin-bottom:8px; background:var(--white); border:1px solid #F0F0F0; }
+        .notif-item.unread { background:#FEFBF0; border-color:rgba(255,184,0,0.3); }
+        .notif-dot { width:8px; height:8px; border-radius:50%; background:var(--primary); flex-shrink:0; margin-top:4px; }
+        .notif-dot.read { background:#D0D0D0; }
+
+        /* ── ONBOARDING ── */
+        .onboard-slide { text-align:center; padding-top:20px; }
+        .onboard-emoji { font-size:64px; margin-bottom:16px; }
+        .google-btn { background:#FFF; border:2px solid #EEE; color:var(--text-main); }
+
+        /* ── LOGO ── */
+        .logo-box { width:72px; height:72px; background:var(--primary); border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:900; color:#fff; box-shadow:0 8px 24px rgba(255,184,0,0.35); margin:0 auto 16px; }
+
+        /* ── TOGGLE TABS ── */
+        .tab-bar { display:flex; background:#F0F0F0; border-radius:12px; padding:4px; margin-bottom:16px; }
+        .tab { flex:1; padding:8px; text-align:center; font-size:12px; font-weight:700; border-radius:10px; cursor:pointer; color:var(--text-muted); transition:var(--transition); }
+        .tab.active { background:var(--white); color:var(--primary); box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+
+        /* ── STREAK FIRE ── */
+        .streak-banner { background:linear-gradient(135deg,#FF6B00,#FFB800); border-radius:var(--radius-lg); padding:20px; color:#fff; display:flex; align-items:center; gap:16px; margin-bottom:16px; }
+        .streak-num { font-size:40px; font-weight:900; }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="notch"></div>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+        <span>9:41</span>
+        <div class="status-icons">
+            <i data-lucide="wifi" style="width:13px;height:13px;"></i>
+            <i data-lucide="signal" style="width:13px;height:13px;"></i>
+            <i data-lucide="battery" style="width:13px;height:13px;"></i>
+        </div>
+    </div>
+
+    <!-- DYNAMIC HEADER -->
+    <div id="app-header" class="app-header" style="display:none;">
+        <button class="back-btn" onclick="goBack()"><i data-lucide="chevron-left" style="width:18px;height:18px;"></i></button>
+        <span class="header-title" id="header-title">SevenEdu</span>
+        <div style="width:38px;"></div>
+    </div>
+
+    <!-- SCREEN AREA -->
+    <div class="screen-wrapper">
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- 1. AUTH — LOGIN / REGISTER              -->
+        <!-- ═══════════════════════════════════════ -->
+        <div id="screen-login" class="screen active">
+            <!-- Logo -->
+            <div style="text-align:center;padding:16px 0 20px;">
+                <div class="logo-box" style="width:60px;height:60px;border-radius:14px;font-size:26px;">S</div>
+                <h1 style="font-size:22px;margin-top:8px;">SevenEdu</h1>
+                <p style="font-size:12px;margin-top:2px;">Tilni o'rganishning eng qulay yo'li</p>
+            </div>
+
+            <!-- Tab switcher -->
+            <div class="auth-tab-bar">
+                <div class="auth-tab active" onclick="switchAuth('login',this)">Kirish</div>
+                <div class="auth-tab" onclick="switchAuth('register',this)">Ro'yxatdan o'tish</div>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <div id="auth-login" class="auth-form active">
+                <div class="input-group">
+                    <label>EMAIL MANZIL</label>
+                    <input type="email" placeholder="example@gmail.com">
+                </div>
+                <div class="input-group">
+                    <label>PAROL</label>
+                    <input type="password" placeholder="Kamida 8 ta belgi">
+                </div>
+                <div style="text-align:right;margin-bottom:14px;">
+                    <span style="font-size:12px;color:var(--primary);font-weight:700;cursor:pointer;">Parolni unutdim?</span>
+                </div>
+                <button class="btn btn-primary" onclick="navigateTo('dashboard')" style="margin-bottom:12px;">
+                    Kirish
+                </button>
+                <div class="divider"><span>YOKI</span></div>
+                <button class="btn btn-outline google-btn" onclick="navigateTo('dashboard')" style="margin-top:12px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                    Google bilan kirish
+                </button>
+            </div>
+
+            <!-- REGISTER FORM -->
+            <div id="auth-register" class="auth-form">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>ISM</label>
+                        <input type="text" placeholder="Azamat">
+                    </div>
+                    <div class="input-group">
+                        <label>FAMILYA</label>
+                        <input type="text" placeholder="Bekmurodov">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>EMAIL MANZIL</label>
+                    <input type="email" placeholder="example@gmail.com">
+                </div>
+                <div class="input-group">
+                    <label>PAROL</label>
+                    <input type="password" placeholder="Kamida 8 ta belgi">
+                </div>
+                <div class="input-group">
+                    <label>PAROLNI TASDIQLANG</label>
+                    <input type="password" placeholder="Parolni qayta kiriting">
+                </div>
+                <button class="btn btn-primary" onclick="navigateTo('dashboard')" style="margin-top:4px;margin-bottom:12px;">
+                    Ro'yxatdan o'tish
+                </button>
+                <div class="divider"><span>YOKI</span></div>
+                <button class="btn btn-outline google-btn" onclick="navigateTo('dashboard')" style="margin-top:12px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                    Google bilan kirish
+                </button>
+                <p style="font-size:10px;text-align:center;margin-top:12px;color:var(--text-muted);">Ro'yxatdan o'tish orqali <span style="color:var(--primary);font-weight:700;">Shartlar</span>ga rozisiz</p>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- 2. DASHBOARD                            -->
+        <!-- ═══════════════════════════════════════ -->
+        <div id="screen-dashboard" class="screen">
+            <!-- TOP BAR -->
+            <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 18px;">
+                <div>
+                    <p style="font-size:12px;font-weight:600;color:var(--text-muted);">Salom, Azamat! 👋</p>
+                    <h1 style="font-size:20px;">O'rganamizmi?</h1>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <div class="coin-pill">🪙 250</div>
+                    <div style="position:relative;cursor:pointer;" onclick="navigateTo('notifications')">
+                        <div class="avatar" style="background:var(--bg-alt);color:var(--text-main);"><i data-lucide="bell" style="width:18px;height:18px;"></i></div>
+                        <div class="nav-dot"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STREAK BANNER -->
+            <div class="streak-banner" onclick="navigateTo('streak')">
+                <div>
+                    <div class="streak-num">🔥 12</div>
+                    <div style="font-size:11px;opacity:0.85;">Streak — uzluksiz kunlar</div>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-size:13px;font-weight:700;margin-bottom:6px;">Bugungi maqsad</div>
+                    <div class="progress-track"><div class="progress-fill" style="width:65%;"></div></div>
+                    <div style="font-size:10px;margin-top:4px;opacity:0.8;">13/20 XP — davom eting!</div>
+                </div>
+            </div>
+
+            <!-- MAIN ACTIONS -->
+            <div class="card card-row" onclick="navigateTo('speaking')" style="background:linear-gradient(135deg,#FFF,#FFF9E6);">
+                <div class="icon-box" style="background:var(--primary-glow);color:var(--primary-dark);"><i data-lucide="mic"></i></div>
+                <div style="flex:1;">
+                    <strong style="font-size:14px;">AI Speaking</strong>
+                    <p style="font-size:11px;">Robot bilan suhbat — Premium</p>
+                </div>
+                <span class="badge badge-yellow">PREMIUM</span>
+            </div>
+
+            <div class="card card-row" onclick="navigateTo('languages')" style="background:linear-gradient(135deg,#FFF,#EFF6FF);">
+                <div class="icon-box" style="background:#EFF6FF;color:var(--blue);"><i data-lucide="map"></i></div>
+                <div style="flex:1;">
+                    <strong style="font-size:14px;">Roadmap</strong>
+                    <p style="font-size:11px;">Dars yo'nalishini tanlang</p>
+                </div>
+                <i data-lucide="chevron-right" style="width:16px;color:var(--text-muted);"></i>
+            </div>
+
+            <div class="card card-row" onclick="navigateTo('arena')" style="background:linear-gradient(135deg,#FFF,#FFF0F0);">
+                <div class="icon-box" style="background:#FEE2E2;color:var(--red);"><i data-lucide="swords"></i></div>
+                <div style="flex:1;">
+                    <strong style="font-size:14px;">Arena 1vs1</strong>
+                    <p style="font-size:11px;">Raqib bilan duel — real vaqt</p>
+                </div>
+                <span class="badge badge-red">LIVE</span>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;">
+                <div class="card" style="padding:14px;cursor:pointer;" onclick="navigateTo('games')">
+                    <div class="icon-box sm" style="background:#F0FFF4;color:var(--green);margin-bottom:8px;"><i data-lucide="gamepad-2" style="width:16px;height:16px;"></i></div>
+                    <strong style="font-size:12px;">O'yinlar</strong>
+                    <p style="font-size:10px;">4 ta mini o'yin</p>
+                </div>
+                <div class="card" style="padding:14px;cursor:pointer;" onclick="navigateTo('ranking')">
+                    <div class="icon-box sm" style="background:var(--primary-glow);color:var(--primary-dark);margin-bottom:8px;"><i data-lucide="bar-chart-3" style="width:16px;height:16px;"></i></div>
+                    <strong style="font-size:12px;">Reyting</strong>
+                    <p style="font-size:10px;">#14 o'rinda</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- 3. LANGUAGES                            -->
+        <!-- ═══════════════════════════════════════ -->
+        <div id="screen-languages" class="screen">
+            <h2 style="margin-bottom:4px;">Tilni tanlang</h2>
+            <p>Qaysi tilni o'rganmoqchisiz?</p>
+            <div class="lang-grid">
+                <div class="lang-card" onclick="selectLang('English')"><img src="https://flagcdn.com/w80/gb.png" alt="EN"><span>English</span></div>
+                <div class="lang-card" onclick="selectLang('Russian')"><img src="https://flagcdn.com/w80/ru.png" alt="RU"><span>Russian</span></div>
+                <div class="lang-card" onclick="selectLang('Arabic')"><img src="https://flagcdn.com/w80/sa.png" alt="AR"><span>Arabic</span></div>
+                <div class="lang-card" onclick="selectLang('Chinese')"><img src="https://flagcdn.com/w80/cn.png" alt="ZH"><span>Chinese</span></div>
+                <div class="lang-card" onclick="selectLang('Turkish')"><img src="https://flagcdn.com/w80/tr.png" alt="TR"><span>Turkish</span></div>
+                <div class="lang-card" onclick="selectLang('Korean')"><img src="https://flagcdn.com/w80/kr.png" alt="KO"><span>Korean</span></div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- 4. COURSE MAP — DUOLINGO STYLE          -->
+        <!-- ═══════════════════════════════════════ -->
+        <div id="screen-course-map" class="screen">
+            <!-- Top stats bar -->
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 16px;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <span style="font-size:16px;">🔥</span>
+                    <span style="font-size:13px;font-weight:800;color:var(--text-main);">12</span>
+                </div>
+                <div id="map-title" style="font-size:14px;font-weight:800;color:var(--text-main);">English — A1</div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <span style="font-size:16px;">❤️</span>
+                    <span style="font-size:13px;font-weight:800;color:var(--red);">5</span>
+                </div>
+            </div>
+
+            <!-- Road Map -->
+            <div id="duo-road" class="duo-path"></div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- 5. MINI GAMES HUB                       -->
+        <!-- ═══════════════════════════════════════ -->
+        <div id="screen-games" class="screen">
+            <h2 style="margin-bottom:4px;">Mini O'yinlar</h2>
+            <p style="margin-bottom:16px;">O'ynab o'rgan, coin yutib ol!</p>
+
+            <div class="game-card" onclick="navigateTo('game-memory')">
+                <div class="game-icon" style="background:#FFF9C4;">🃏</div>
+                <div style="flex:1;">
+                    <strong style="font-size:13px;">Word Memory Card</strong>
+                    <p style="font-size:11px;">Rasm + so'z juftini toping • 5 daqiqa</p>
+                </div>
+                <div>
+                    <div class="badge badge-yellow">+30 🪙</div>
+                </div>
+            </div>
+
+            <div class="game-card" onclick="navigateTo('game-falling')">
+                <div class="game-icon" style="background:#DBEAFE;">🌊</div>
+                <div style="flex:1;">
+                    <strong style="font-size:13px;">Falling Words</strong>
+                    <p style="font-size:11px;">Tushayotgan rasmni tarjima qiling</p>
+                </div>
+                <div>
+                    <div class="badge badge-blue">+20 🪙</div>
+                </div>
+            </div>
+
+            <div class="game-card" onclick="navigateTo('game-word')">
+                <div class="game-icon" style="background:#F0FFF4;">🔤</div>
+                <div style="flex:1;">
+                    <strong style="font-size:13px;">So'z O'yini</strong>
+                    <p style="font-size:11px;">Harflarni to'g'ri tartibga qo'ying</p>
+                </div>
+                <div>
+                    <div class="badge badge-green">+25 🪙</div>
+                </div>
+            </div>
+
+            <div class="game-card" onclick="navigateTo('arena')">
+                <div class="game-icon" style="background:#FEE2E2;">⚔️</div>
+                <div style="flex:1;">
+                    <strong style="font-size:13px;">1vs1 Duel Arena</strong>
+                    <p style="font-size:11px;">Real foydalanuvchi bilan bellashing</p>
+                </div>
+                <div>
+                    <span class="badge badge-red">LIVE</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- 6. GAME — MEMORY CARDS                  -->
+        <!-- ═══════════════════════════════════════ -->
+        <div id="screen-game-memory" class="screen">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                <div>
+                    <h2 style="font-size:16px;">Word Memory Card</h2>
+                    <p style="font-size:11px;">Juft cardlarni toping</p>
+                </div>
+                <div style="text-align:right;">
+                    <div id="mem-timer" style="font-size:18px;font-weight:800;color:var(--primary);">4:58</div>
+                    <div class="coin-pill" style="font-size:10px;">🪙 0</div>
+                </div>
+            </div>
+
+            <div class="mem-grid" id="mem-grid">
+                <div class="mem-card" onclick="flipCard(this,'🍎','apple')"><span id="mc0">?</span></div>
+                <div class="mem-card" onclick="flipCard(this,'🍌','banana')"><span id="mc1">?</span></div>
+                <div class="mem-card" onclick="flipCard(this,'apple','🍎')"><span id="mc2">?</span></div>
+                <div class="mem-card" onclick="flipCard(this,'🥕','carrot')"><span id="mc3">?</span></div>
+                <div class="mem-card" onclick="flipCard(this,'banana','🍌')"><span id="mc4">?</span></div>
+                <div class="mem-card" onclick="flipCard(this,'carrot','🥕')"><span id="mc5">?</span></div>
+            </div>
+
+            <p style="text-align:center;font-size:11px;margin-top:12px;color:var(--text-muted);">Cardni bosib oching — juftini toping!</p>
+
+            <div style="margin-top:14px;">
+                <p style="font-size:12px;font-weight:600;margin-bottom:8px;">So'zni tanlang:</p>
+                <div class="options-row">
+                    <div class="option-btn" onclick="selectMemOption(this,'apple')">apple</div>
+                    <div class="option-btn" onclick="selectMemOption(this,'banana')">banana</div>
+                    <div class="option-btn" onclick="selectMemOption(this,'pineapple')">pineapple</div>
+                    <div class="option-btn" onclick="selectMemOption(this,'carrot')">carrot</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- 7. GAME — FALLING WORDS                 -->
+        <!-- ═══════════════════════════════════════ -->
+        <div id="screen-game-falling" class="screen">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                <h2 style="font-size:16px;">Falling Words 🌊</h2>
+                <div class="coin-pill">🪙 <span id="fall-score">0</span></div>
+            </div>
+
+            <div class="fall-area" id="fall-area">
+                <div class="falling-item" id="falling-emoji" style="left:50%;transform:translateX(-50%);">🍎</div>
+            </div>
+
+            <p style="text-align:center;font-size:12px;margin:10px 0;color:var(--text-muted);">Quyidagilardan to'g'ri tarjimani tanlang:</p>
+
+            <div class="options-row">
+                <div class="option-btn" onclick="checkFall(this,'apple')">olma</div>
+                <div class="option-btn" onclick="checkFall(this,'banana')">banan</div>
+                <div class="option-btn" onclick="checkFall(this,'pineapple')">ananas</div>
+                <div class="option-btn" onclick="checkFall(this,'carrot')">sabzi</div>
+            </div>
+
+            <div id="fall-result" style="text-align:center;margin-top:12px;font-weight:700;font-size:14px;"></div>
+            <button class="btn btn-primary" style="margin-top:14px;" onclick="nextFalling()">Keyingi →</button>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- 8. GAME — WORD PUZZLE                   -->
+        <!-- ═══════════════════════════════════════ -->
+        <div id="screen-game-word" class="screen">
+            <h2 style="font-size:16px;margin-bottom:4px;">So'z O'yini 🔤</h2>
+            <p style="margin-bottom:16px;font-size:11px;">Harflarni to'g'ri tartibga joylashtiring</p>
+
+            <div style="background:var(--bg-alt);border-radius:var(--radius-md);padding:16px;text-align:center;margin-bottom:14px;">
+                <p style="font-size:11px;margin-bottom:6px;">Ma'nosi:</p>
+                <h2 style="font-size:20px;color:var(--primary);">🍎 olma</h2>
+            </div>
+
+            <div id="word-answer" style="display:flex;gap:6px;justify-content:center;margin-bottom:16px;min-height:44px;flex-wrap:wrap;"></div>
+
+            <div id="word-letters" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+                <div class="option-btn" style="padding:10px 14px;" onclick="pickLetter(this,'A')">A</div>
+                <div class="option-btn" style="padding:10px 14px;" onclick="pickLetter(this,'P')">P</div>
+                <div class="option-btn" style="padding:10px 14px;" onclick="pickLetter(this,'P')">P</div>
+                <div class="option-btn" style="padding:10px 14px;" onclick="pickLetter(this,'L')">L</div>
+                <div class="option-btn" style="padding:10px 14px;" onclick="pickLetter(this,'E')">E</div>
+                <div class="option-btn" style="padding:10px 14px;" onclick="pickLetter(this,'X')">X</div>
+                <div class="option-btn" style="padding:10px 14px;" onclick="pickLetter(this,'Z')">Z</div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:16px;">
+                <button class="btn btn-outline" style="flex:1;font-size:13px;" onclick="clearWord()">Tozalash</button>
+                <button class="btn btn-primary" style="flex:1;font-size:13px;" onclick="checkWord()">Tekshirish ✓</button>
+            </div>
+            <div id="word-result" style="text-align:center;margin-top:10px;font-weight:700;font-size:14px;"></div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- 9. ARENA 1vs1 DUEL                      -->
+        <!-- ═══════════════════════════════════════ -->
+        <div id="screen-arena" class="screen">
+            <div id="arena-search" style="text-align:center;padding:20px 0;">
+                <div style="width:80px;height:80px;border:4px solid var(--primary);border-top-color:transparent;border-radius:50%;margin:0 auto 20px;animation:spin 1s linear infinite;"></div>
+                <h2>Raqib qidirilmoqda...</h2>
+                <p style="margin-top:6px;">O'rtacha kutish: 10–20 soniya</p>
+                <button class="btn btn-outline" style="margin-top:20px;width:auto;padding:10px 24px;" onclick="startDuel()">Tez boshlash (demo)</button>
+            </div>
+
+            <div id="arena-duel" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <span style="font-size:12px;font-weight:700;">Savol 1/10</span>
+                    <span id="duel-timer" style="font-size:18px;font-weight:800;color:var(--red);">30</span>
+                </div>
+
+                <div class="duel-vs">
+                    <div class="duel-player">
+                        <div class="avatar" style="border:3px solid var(--primary);background:var(--primary-glow);"><i data-lucide="user" style="width:22px;"></i></div>
+                        <strong style="font-size:12px;">Siz</strong>
+                        <div class="badge badge-green" style="margin-top:4px;">3 ✓</div>
+                    </div>
+                    <div class="vs-badge">VS</div>
+                    <div class="duel-player">
+                        <div class="avatar" style="border:3px solid var(--red);background:#FEE2E2;"><i data-lucide="user" style="width:22px;"></i></div>
+                        <strong style="font-size:12px;">Jamshid</strong>
+                        <div class="badge badge-red" style="margin-top:4px;">2 ✓</div>
+                    </div>
+                </div>
+
+                <div class="duel-q">
+                    <p style="font-size:11px;margin-bottom:4px;">Quyidagi so'zning tarjimasi:</p>
+                    <h2>"ephemeral"</h2>
+                </div>
+
+                <div class="options-row">
+                    <div class="option-btn" onclick="duelAnswer(this,'wrong')">doimiy</div>
+                    <div class="option-btn" onclick="duelAnswer(this,'correct')">vaqtinchalik</div>
+                    <div class="option-btn" onclick="duelAnswer(this,'wrong')">g'alati</div>
+                    <div class="option-btn" onclick="duelAnswer(this,'wrong')">kuchli</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- 10. AI SPEAKING                         -->
+        <!-- ═══════════════════════════════════════ -->
+        <div id="screen-speaking" class="screen">
+            <div style="text-align:center;margin-bottom:16px;">
+                <h2 style="font-size:16px;">AI Speaking Tutor</h2>
+                <p style="font-size:11px;">Ingliz tilini robot bilan mashq qiling</p>
+            </div>
+
+            <div style="background:var(--bg-alt);border-radius:var(--radius-lg);padding:16px;margin-bottom:14px;max-height:200px;overflow-y:auto;">
+                <div class="speak-bubble">
+                    <p style="font-size:12px;">Hello! Let's practice your English today. Please repeat after me: <strong>"The weather is beautiful today."</strong></p>
+                </div>
+                <div class="speak-bubble user" style="margin-top:8px;">
+                    <p style="font-size:12px;color:var(--primary-dark);">The weather is beautiful today.</p>
+                    <span class="badge badge-green" style="font-size:9px;margin-top:4px;">98% — Ajoyib! ✓</span>
+                </div>
+                <div class="speak-bubble" style="margin-top:8px;">
+                    <p style="font-size:12px;">Excellent pronunciation! Now try: <strong>"She sells seashells by the seashore."</strong></p>
+                </div>
+            </div>
+
+            <div style="text-align:center;margin:16px 0;">
+                <div class="speak-circle" id="speak-btn" onclick="toggleRecording()">
+                    <i data-lucide="mic" style="width:36px;height:36px;color:var(--primary-dark);"></i>
+                </div>
+                <p style="font-size:11px;margin-top:8px;" id="speak-status">Bosib gapiring</p>
+            </div>
+
+            <div class="waveform" id="waveform" style="margin-bottom:12px;">
+                <div class="wave-bar" style="height:8px;"></div>
+                <div class="wave-bar" style="height:14px;"></div>
+                <div class="wave-bar" style="height:8px;"></div>
+                <div class="wave-bar" style="height:20px;"></div>
+                <div class="wave-bar" style="height:10px;"></div>
+                <div class="wave-bar" style="height:16px;"></div>
+                <div class="wave-bar" style="height:8px;"></div>
+                <div class="wave-bar" style="height:12px;"></div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+                <div class="stat-card">
+                    <strong style="font-size:22px;">88</strong>
+                    <small>FLUENCY SCORE</small>
+                </div>
+                <div class="stat-card">
+                    <strong style="color:var(--green);">98.5%</strong>
+                    <small>ANIQLIK</small>
+                </div>
+            </div>
+
+            <div style="background:rgba(255,184,0,0.08);border:1px solid rgba(255,184,0,0.3);border-radius:var(--radius-md);padding:12px;text-align:center;">
+                <span style="font-size:11px;color:var(--primary-dark);">⚡ Qolgan requestlar: <strong>7/10</strong> (bugungi dars uchun)</span>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- 11. PREMIUM SCREEN                      -->
+        <!-- ═══════════════════════════════════════ -->
+        <div id="screen-premium" class="screen">
+            <div class="premium-hero">
+                <div style="font-size:32px;margin-bottom:8px;">👑</div>
+                <h1>Premium</h1>
+                <p style="color:rgba(255,255,255,0.85);margin-top:4px;font-size:12px;">Barcha imkoniyatlarni oching</p>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-bottom:16px;">
+                <button class="btn btn-primary" style="flex:1;font-size:12px;" onclick="alert('To\'lov tizimi')">
+                    💳 Pul bilan — 29,000 so'm/oy
+                </button>
+            </div>
+
+            <div style="background:var(--bg-alt);border-radius:var(--radius-md);padding:14px;margin-bottom:16px;text-align:center;">
+                <p style="font-size:12px;margin-bottom:6px;">Yoki coinlar bilan:</p>
+                <div class="coin-pill" style="font-size:14px;">🪙 200 coin = 1 oy Premium</div>
+                <p style="font-size:10px;margin-top:6px;color:var(--text-muted);">Sizda: 250 coin — yetarli!</p>
+                <button class="btn btn-primary" style="margin-top:10px;font-size:12px;" onclick="alert('Premium faollashtirildi!')">Coin bilan faollashtirish</button>
+            </div>
+
+            <div style="background:var(--white);border-radius:var(--radius-md);border:1px solid #EEE;padding:16px;">
+                <h2 style="font-size:14px;margin-bottom:12px;">Premium imkoniyatlar:</h2>
+                <div class="premium-feature">
+                    <span class="pf-icon">🎙️</span>
+                    <div><strong style="font-size:13px;">AI Speaking</strong><p style="font-size:11px;">Cheksiz talaffuz mashqi</p></div>
+                </div>
+                <div class="premium-feature">
+                    <span class="pf-icon">📥</span>
+                    <div><strong style="font-size:13px;">Offline Darslar</strong><p style="font-size:11px;">Video darslarni yuklab oling</p></div>
+                </div>
+                <div class="premium-feature">
+                    <span class="pf-icon">🎬</span>
+                    <div><strong style="font-size:13px;">Kino + Multfilm</strong><p style="font-size:11px;">Subtitle bilan tomosha qiling</p></div>
+                </div>
+                <div class="premium-feature">
+                    <span class="pf-icon">🎨</span>
+                    <div><strong style="font-size:13px;">Custom UI Tema</strong><p style="font-size:11px;">Ilovani o'zingizga sozlang</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- 12. RANKING                             -->
+        <!-- ═══════════════════════════════════════ -->
+        <div id="screen-ranking" class="screen">
+            <div class="tab-bar" style="margin-bottom:14px;">
+                <div class="tab active" onclick="switchTab(this)">Global</div>
+                <div class="tab" onclick="switchTab(this)">Haftalik</div>
+                <div class="tab" onclick="switchTab(this)">Do'stlar</div>
+            </div>
+
+            <div class="rank-item">
+                <div class="rank-num" style="color:#FFB800;">🥇</div>
+                <div class="avatar" style="background:var(--primary-light);"><i data-lucide="crown" style="width:18px;color:#7A5C00;"></i></div>
+                <div class="rank-info"><strong>Dilmurod</strong><small>⚡ 14,200 XP</small></div>
+                <div class="rank-score">#1</div>
+            </div>
+            <div class="rank-item">
+                <div class="rank-num" style="color:#9CA3AF;">🥈</div>
+                <div class="avatar"><i data-lucide="user" style="width:18px;"></i></div>
+                <div class="rank-info"><strong>Sevinch</strong><small>⚡ 12,800 XP</small></div>
+                <div class="rank-score">#2</div>
+            </div>
+            <div class="rank-item">
+                <div class="rank-num" style="color:#CD7F32;">🥉</div>
+                <div class="avatar"><i data-lucide="user" style="width:18px;"></i></div>
+                <div class="rank-info"><strong>Bobur</strong><small>⚡ 11,400 XP</small></div>
+                <div class="rank-score">#3</div>
+            </div>
+            <div style="border:1px dashed #DDD;border-radius:8px;margin:8px 0;padding:4px;text-align:center;"><p style="font-size:10px;">• • •</p></div>
+            <div class="rank-item me">
+                <div class="rank-num">14</div>
+                <div class="avatar" style="border:2px solid var(--primary);"><i data-lucide="user" style="width:18px;color:var(--primary);"></i></div>
+                <div class="rank-info"><strong>Siz (Azamat)</strong><small>⚡ 8,400 XP</small></div>
+                <div class="rank-score">#14</div>
+            </div>
+            <div class="rank-item">
+                <div class="rank-num">15</div>
+                <div class="avatar"><i data-lucide="user" style="width:18px;"></i></div>
+                <div class="rank-info"><strong>Javohir</strong><small>⚡ 8,100 XP</small></div>
+                <div class="rank-score">#15</div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- 13. NOTIFICATIONS                       -->
+        <!-- ═══════════════════════════════════════ -->
+        <div id="screen-notifications" class="screen">
+            <h2 style="margin-bottom:4px;">Bildirishnomalar</h2>
+            <p style="margin-bottom:14px;font-size:11px;">3 ta yangi xabar</p>
+
+            <div class="notif-item unread">
+                <div class="notif-dot"></div>
+                <div>
+                    <strong style="font-size:13px;">🔥 Streak xavf ostida!</strong>
+                    <p style="font-size:11px;margin-top:2px;">Bugun hali dars ko'rmadingiz. Streakni saqlab qoling!</p>
+                    <span style="font-size:10px;color:var(--text-muted);">10 daqiqa avval</span>
+                </div>
+            </div>
+            <div class="notif-item unread">
+                <div class="notif-dot"></div>
+                <div>
+                    <strong style="font-size:13px;">⚔️ Duel taklifi!</strong>
+                    <p style="font-size:11px;margin-top:2px;">Jamshid sizni 1vs1 duelga chaqirmoqda</p>
+                    <span style="font-size:10px;color:var(--text-muted);">30 daqiqa avval</span>
+                    <div style="display:flex;gap:6px;margin-top:6px;">
+                        <button class="btn btn-primary btn-sm" onclick="navigateTo('arena')">Qabul qilish</button>
+                        <button class="btn btn-outline btn-sm">Rad etish</button>
+                    </div>
+                </div>
+            </div>
+            <div class="notif-item unread">
+                <div class="notif-dot"></div>
+                <div>
+                    <strong style="font-size:13px;">🏆 Yangi rekord!</strong>
+                    <p style="font-size:11px;margin-top:2px;">Dilmurod reytingda 1-o'ringa chiqdi. Siz hali #14 dasiz</p>
+                    <span style="font-size:10px;color:var(--text-muted);">2 soat avval</span>
+                </div>
+            </div>
+            <div class="notif-item">
+                <div class="notif-dot read"></div>
+                <div>
+                    <strong style="font-size:13px;">💰 Coin olindi</strong>
+                    <p style="font-size:11px;margin-top:2px;">Memory Card o'yinidan +30 coin qo'shildi</p>
+                    <span style="font-size:10px;color:var(--text-muted);">Kecha</span>
+                </div>
+            </div>
+            <div class="notif-item">
+                <div class="notif-dot read"></div>
+                <div>
+                    <strong style="font-size:13px;">📚 Yangi dars qo'shildi</strong>
+                    <p style="font-size:11px;margin-top:2px;">A2 darajada 5 ta yangi dars mavjud</p>
+                    <span style="font-size:10px;color:var(--text-muted);">3 kun avval</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- 14. STREAK + ACTIVITY HEATMAP           -->
+        <!-- ═══════════════════════════════════════ -->
+        <div id="screen-streak" class="screen">
+            <div class="streak-banner">
+                <div>
+                    <div class="streak-num">🔥 12</div>
+                    <div style="font-size:12px;opacity:0.9;">kun ketma-ket</div>
+                </div>
+                <div>
+                    <p style="font-size:13px;font-weight:700;">Shaxsiy rekord: 28 kun</p>
+                    <p style="font-size:11px;opacity:0.85;margin-top:4px;">Har kuni kirish — +1 streak</p>
+                </div>
+            </div>
+
+            <div style="background:var(--white);border:1px solid #EEE;border-radius:var(--radius-md);padding:16px;margin-bottom:14px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                    <h2 style="font-size:14px;">Faollik Jadvali</h2>
+                    <span style="font-size:11px;color:var(--text-muted);">So'ngi 5 hafta</span>
+                </div>
+
+                <div style="display:flex;gap:3px;font-size:9px;color:var(--text-muted);margin-bottom:4px;padding-left:2px;">
+                    <span style="flex:1;text-align:center;">Du</span>
+                    <span style="flex:1;text-align:center;">Se</span>
+                    <span style="flex:1;text-align:center;">Ch</span>
+                    <span style="flex:1;text-align:center;">Pa</span>
+                    <span style="flex:1;text-align:center;">Ju</span>
+                    <span style="flex:1;text-align:center;">Sh</span>
+                    <span style="flex:1;text-align:center;">Ya</span>
+                </div>
+
+                <div id="heatmap" class="heatmap"></div>
+
+                <div style="display:flex;align-items:center;gap:6px;margin-top:10px;justify-content:flex-end;">
+                    <span style="font-size:10px;color:var(--text-muted);">Kam</span>
+                    <div style="width:10px;height:10px;border-radius:2px;background:#F0F0F0;"></div>
+                    <div style="width:10px;height:10px;border-radius:2px;background:rgba(255,184,0,0.3);"></div>
+                    <div style="width:10px;height:10px;border-radius:2px;background:rgba(255,184,0,0.6);"></div>
+                    <div style="width:10px;height:10px;border-radius:2px;background:var(--primary);"></div>
+                    <span style="font-size:10px;color:var(--text-muted);">Ko'p</span>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+                <div class="stat-card">
+                    <strong>42</strong>
+                    <small>JAMI KUN</small>
+                </div>
+                <div class="stat-card">
+                    <strong style="color:var(--green);">34</strong>
+                    <small>FAOL KUN</small>
+                </div>
+                <div class="stat-card">
+                    <strong style="color:var(--red);">8</strong>
+                    <small>O'TKAZILGAN</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- 15. PROFILE                             -->
+        <!-- ═══════════════════════════════════════ -->
+        <div id="screen-profile" class="screen">
+            <div style="text-align:center;margin:16px 0 20px;">
+                <div style="width:86px;height:86px;border-radius:43px;background:var(--bg-alt);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;border:4px solid var(--primary);box-shadow:0 4px 16px rgba(255,184,0,0.2);">
+                    <i data-lucide="user" style="width:42px;height:42px;color:var(--primary);"></i>
+                </div>
+                <h2 style="font-size:18px;">Azamat Bekmurodov</h2>
+                <span class="badge badge-yellow" style="margin-top:4px;">⭐ Standard Plan</span>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card"><strong>🔥 12</strong><small>STREAK</small></div>
+                <div class="stat-card"><strong>🏆 #14</strong><small>RANKING</small></div>
+                <div class="stat-card"><strong>⚡ 8.4k</strong><small>TOTAL XP</small></div>
+                <div class="stat-card"><strong>🪙 250</strong><small>COINS</small></div>
+            </div>
+
+            <div style="margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;"><span>Kurs progressi</span><span style="font-weight:700;color:var(--primary);">65%</span></div>
+                <div class="progress-track"><div class="progress-fill" style="width:65%;"></div></div>
+            </div>
+
+            <div class="game-card" onclick="navigateTo('premium')">
+                <div class="game-icon" style="background:var(--primary-glow);font-size:20px;">👑</div>
+                <div style="flex:1;"><strong style="font-size:13px;">Premiumga o'tish</strong><p style="font-size:11px;">200 coin yoki pul bilan</p></div>
+                <i data-lucide="chevron-right" style="width:16px;color:var(--text-muted);"></i>
+            </div>
+
+            <div class="game-card" onclick="navigateTo('streak')">
+                <div class="game-icon" style="background:#FFF3E0;font-size:20px;">🔥</div>
+                <div style="flex:1;"><strong style="font-size:13px;">Streak & Faollik</strong><p style="font-size:11px;">12 kunlik streak davom etmoqda</p></div>
+                <i data-lucide="chevron-right" style="width:16px;color:var(--text-muted);"></i>
+            </div>
+
+            <div class="game-card">
+                <div class="game-icon" style="background:#F0F0F0;"><i data-lucide="settings" style="width:20px;"></i></div>
+                <div style="flex:1;"><strong style="font-size:13px;">Sozlamalar</strong></div>
+                <i data-lucide="chevron-right" style="width:16px;color:var(--text-muted);"></i>
+            </div>
+
+            <button class="btn btn-danger" style="margin-top:12px;font-size:13px;" onclick="navigateTo('login')">
+                <i data-lucide="log-out" style="width:16px;"></i> Chiqish
+            </button>
+        </div>
+
+    </div><!-- /screen-wrapper -->
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav" id="main-nav" style="display:none;">
+        <div class="nav-item" id="nav-home" onclick="navigateTo('dashboard',this)">
+            <i data-lucide="home" style="width:20px;height:20px;"></i>
+            <span>Asosiy</span>
+        </div>
+        <div class="nav-item" id="nav-games" onclick="navigateTo('games',this)">
+            <i data-lucide="gamepad-2" style="width:20px;height:20px;"></i>
+            <span>O'yinlar</span>
+        </div>
+        <div class="nav-item" id="nav-rank" onclick="navigateTo('ranking',this)">
+            <i data-lucide="bar-chart-3" style="width:20px;height:20px;"></i>
+            <span>Reyting</span>
+        </div>
+        <div class="nav-item" id="nav-profile" onclick="navigateTo('profile',this)">
+            <i data-lucide="user-cog" style="width:20px;height:20px;"></i>
+            <span>Profil</span>
+        </div>
+    </div>
+</div><!-- /app-container -->
+
+<style>
+@keyframes spin { to { transform:rotate(360deg); } }
+</style>
+
+<script>
+lucide.createIcons();
+let history = [];
+const NAV_SCREENS = ['dashboard','ranking','profile','games'];
+const NAV_IDS = { dashboard:'nav-home', games:'nav-games', ranking:'nav-rank', profile:'nav-profile' };
+
+function navigateTo(id, navEl) {
+    const cur = document.querySelector('.screen.active');
+    if (cur) history.push(cur.id.replace('screen-',''));
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById('screen-' + id);
+    if (!target) return;
+    target.classList.add('active');
+
+    const nav    = document.getElementById('main-nav');
+    const header = document.getElementById('app-header');
+    const title  = document.getElementById('header-title');
+
+    const showNav = NAV_SCREENS.includes(id);
+    nav.style.display = showNav ? 'flex' : 'none';
+
+    const noHeader = ['login','dashboard'].includes(id);
+    header.style.display = noHeader ? 'none' : 'flex';
+
+    const titles = {
+        'languages':'Tilni tanlang','course-map':'Dars Yo\'li',
+        'games':'Mini O\'yinlar','game-memory':'Memory Card',
+        'game-falling':'Falling Words','game-word':'So\'z O\'yini',
+        'arena':'1vs1 Arena','speaking':'AI Speaking',
+        'premium':'Premium','ranking':'Global Reyting',
+        'notifications':'Bildirishnomalar','streak':'Streak & Faollik',
+        'profile':'Mening Profilim'
+    };
+    title.textContent = titles[id] || 'SevenEdu';
+
+    if (showNav) {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        const navId = NAV_IDS[id];
+        if (navId) document.getElementById(navId).classList.add('active');
+    }
+
+    if (id === 'course-map') { setTimeout(buildSnakePath, 50); }
+    if (id === 'streak')    buildHeatmap();
+    if (id === 'arena')     resetArena();
+    lucide.createIcons();
+}
+
+function goBack() {
+    if (history.length) navigateTo(history.pop());
+}
+
+function selectLang(name) {
+    navigateTo('course-map');
+    setTimeout(() => {
+        const el = document.getElementById('map-title');
+        if (el) el.textContent = name + ' — A1';
+    }, 60);
+}
+
+/* ── AUTH TAB SWITCH ── */
+function switchAuth(type, el) {
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('auth-' + type).classList.add('active');
+}
+
+/* ── DUOLINGO ROAD MAP ── */
+function buildSnakePath() {
+    const road = document.getElementById('duo-road');
+    if (!road) return;
+    road.innerHTML = '';
+
+    const sections = [
+        {
+            title: '1-bo\'lim: Asoslar', subtitle: '8 ta dars • Grammatika & Alifbo',
+            icon: '📖', color: '#3B82F6',
+            lessons: [
+                { icon:'🔤', label:'Harflar',      state:'done'    },
+                { icon:'👋', label:'Salomlashish',  state:'done'    },
+                { icon:'🔢', label:'Raqamlar',      state:'done'    },
+                { icon:'🎨', label:'Ranglar',       state:'done'    },
+                { icon:'🏠', label:'Uy so\'zlari',  state:'current' },
+                { icon:'👨‍👩‍👧', label:'Oila',        state:'locked'  },
+                { icon:'🍎', label:'Oziq-ovqat',    state:'locked'  },
+                { icon:'🎁', label:'1-bo\'lim imtihon', state:'locked', bonus:true },
+            ]
+        },
+        {
+            title: '2-bo\'lim: Kundalik Hayot', subtitle: '7 ta dars • So\'zlashuv',
+            icon: '🗣️', color: '#8B5CF6',
+            lessons: [
+                { icon:'🕐', label:'Vaqt',          state:'locked' },
+                { icon:'🌤️', label:'Ob-havo',       state:'locked' },
+                { icon:'🛒', label:'Do\'kon',        state:'locked' },
+                { icon:'🚌', label:'Transport',      state:'locked' },
+                { icon:'💼', label:'Kasb-kor',       state:'locked' },
+                { icon:'🏥', label:'Salomatlik',     state:'locked' },
+                { icon:'🎁', label:'2-bo\'lim imtihon', state:'locked', bonus:true },
+            ]
+        }
+    ];
+
+    /* snake positions: center→right→center→left→center… */
+    const positions = ['center','right','center','left','center','right','center','left'];
+
+    sections.forEach((sec, si) => {
+        /* Section banner */
+        const banner = document.createElement('div');
+        banner.className = 'duo-section-header';
+        banner.style.background = `linear-gradient(135deg, ${sec.color}, ${sec.color}CC)`;
+        banner.innerHTML = `
+            <span style="font-size:22px;">${sec.icon}</span>
+            <div><span>${sec.title}</span><small>${sec.subtitle}</small></div>`;
+        road.appendChild(banner);
+
+        /* Nodes */
+        sec.lessons.forEach((lesson, li) => {
+            const pos = positions[li % positions.length];
+            const isLast = li === sec.lessons.length - 1;
+
+            /* wrapper row */
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;align-items:center;margin-bottom:0;';
+
+            /* spacer logic */
+            const leftSpacer  = document.createElement('div');
+            const rightSpacer = document.createElement('div');
+            leftSpacer.style.flex  = pos === 'right'  ? '1' : (pos === 'center' ? '1' : '0');
+            rightSpacer.style.flex = pos === 'left'   ? '1' : (pos === 'center' ? '1' : '0');
+
+            /* node button */
+            const node = document.createElement('div');
+            node.className = `duo-node ${lesson.bonus ? 'bonus' : lesson.state}`;
+            node.style.flexShrink = '0';
+
+            /* Stars for done */
+            const stars = lesson.state === 'done' ? '⭐⭐⭐' : lesson.state === 'current' ? '⭐⭐☆' : '';
+
+            node.innerHTML = `
+                <div class="node-bubble">${lesson.label}</div>
+                <div class="node-icon">${lesson.state === 'locked' ? '🔒' : lesson.icon}</div>
+                ${stars ? `<div class="node-stars">${stars}</div>` : ''}`;
+
+            if (lesson.state !== 'locked') {
+                node.onclick = () => openLesson(lesson.label, lesson.state);
+            }
+
+            row.appendChild(leftSpacer);
+            row.appendChild(node);
+            row.appendChild(rightSpacer);
+            road.appendChild(row);
+
+            /* vertical connector */
+            if (!isLast) {
+                const nextPos = positions[(li + 1) % positions.length];
+                const conn = document.createElement('div');
+
+                if (pos === nextPos) {
+                    /* straight down */
+                    conn.style.cssText = 'display:flex;justify-content:' +
+                        (pos==='left'?'flex-start':(pos==='right'?'flex-end':'center')) +
+                        ';padding:'+(pos==='left'?'0 0 0 65px':'0 65px 0 0')+';';
+                    if (pos === 'center') conn.style.padding = '0';
+                    conn.innerHTML = `<div style="width:3px;height:22px;background:${lesson.state==='done'?'rgba(34,197,94,0.4)':'#E5E7EB'};border-radius:2px;margin:0 auto;"></div>`;
+                } else {
+                    /* diagonal curve via svg */
+                    const goRight = (pos === 'left' && nextPos === 'center') || (pos === 'center' && nextPos === 'right');
+                    const goLeft  = (pos === 'right' && nextPos === 'center') || (pos === 'center' && nextPos === 'left');
+                    const fromRight = pos === 'right';
+                    const toRight   = nextPos === 'right';
+
+                    conn.style.cssText = 'width:100%;overflow:visible;';
+                    const clr = lesson.state === 'done' ? 'rgba(34,197,94,0.4)' : '#E5E7EB';
+                    /* simple arc SVG */
+                    const x1 = pos === 'left' ? 65 : (pos === 'right' ? 235 : 150);
+                    const x2 = nextPos === 'left' ? 65 : (nextPos === 'right' ? 235 : 150);
+                    conn.innerHTML = `<svg width="310" height="40" viewBox="0 0 310 40" style="display:block;overflow:visible;">
+                        <path d="M${x1} 0 Q${(x1+x2)/2} 40 ${x2} 40" stroke="${clr}" stroke-width="3" fill="none" stroke-dasharray="6 4"/>
+                    </svg>`;
+                }
+                road.appendChild(conn);
+            }
+        });
+
+        /* gap between sections */
+        const gap = document.createElement('div');
+        gap.style.height = '12px';
+        road.appendChild(gap);
+    });
+}
+
+function openLesson(name, state) {
+    if (state === 'current') {
+        alert(`"${name}" darsi boshlanmoqda! 🚀`);
+    } else {
+        alert(`✅ "${name}" darsini takrorlash`);
+    }
+}
+
+function buildHeatmap() {
+    const c = document.getElementById('heatmap');
+    c.innerHTML = '';
+    const pattern = [1,0,1,1,0,1,1, 1,1,0,1,1,1,0, 0,1,1,1,0,1,1, 1,0,1,1,1,0,1, 1,1,1,0,1,1,1];
+    const levels  = [0,0,2,1,0,3,2, 2,1,0,3,2,1,0, 0,2,3,1,0,2,1, 3,0,2,1,3,0,2, 1,2,3,0,2,1,3];
+    pattern.forEach((v,i) => {
+        const cell = document.createElement('div');
+        const lvl = levels[i];
+        cell.className = 'heat-cell' + (v === 0 ? '' : lvl >= 3 ? ' active' : lvl >= 2 ? ' semi' : ' light');
+        c.appendChild(cell);
+    });
+}
+
+/* ── FALLING WORDS ── */
+const fallData = [
+    {emoji:'🍎', correct:'apple', options:['olma','banan','ananas','sabzi']},
+    {emoji:'🍌', correct:'banana', options:['olma','banan','ananas','sabzi']},
+    {emoji:'🥕', correct:'carrot', options:['olma','banan','ananas','sabzi']},
+];
+let fallIdx = 0, fallCoins = 0;
+function checkFall(btn, chosen) {
+    const item = fallData[fallIdx];
+    document.querySelectorAll('.option-btn').forEach(b => b.style.pointerEvents='none');
+    const result = document.getElementById('fall-result');
+    if (chosen === item.correct) {
+        btn.classList.add('correct');
+        fallCoins += 10;
+        document.getElementById('fall-score').textContent = fallCoins;
+        result.innerHTML = '✅ To\'g\'ri! +10 🪙';
+        result.style.color = 'var(--green)';
+    } else {
+        btn.classList.add('wrong');
+        result.innerHTML = '❌ Noto\'g\'ri. To\'g\'ri javob: <strong>' + item.correct + '</strong>';
+        result.style.color = 'var(--red)';
+    }
+}
+function nextFalling() {
+    fallIdx = (fallIdx + 1) % fallData.length;
+    const item = fallData[fallIdx];
+    document.getElementById('falling-emoji').textContent = item.emoji;
+    document.getElementById('fall-result').textContent = '';
+    document.querySelectorAll('#screen-game-falling .option-btn').forEach(b => {
+        b.classList.remove('correct','wrong');
+        b.style.pointerEvents='';
+    });
+    const emojis = ['🍎','🍌','🥕','🍊','🍇'];
+    document.getElementById('falling-emoji').textContent = emojis[fallIdx % emojis.length];
+}
+
+/* ── WORD PUZZLE ── */
+let wordBuilt = '';
+function pickLetter(el, letter) {
+    wordBuilt += letter;
+    document.getElementById('word-answer').innerHTML += `<div class="option-btn" style="padding:10px 14px;min-width:36px;text-align:center;border-color:var(--primary);">${letter}</div>`;
+    el.style.opacity = '0.3';
+    el.style.pointerEvents = 'none';
+}
+function clearWord() {
+    wordBuilt = '';
+    document.getElementById('word-answer').innerHTML = '';
+    document.querySelectorAll('#word-letters .option-btn').forEach(b => {b.style.opacity='';b.style.pointerEvents='';});
+    document.getElementById('word-result').textContent = '';
+}
+function checkWord() {
+    const r = document.getElementById('word-result');
+    if (wordBuilt.toUpperCase() === 'APPLE') {
+        r.innerHTML = '✅ Ajoyib! +25 🪙'; r.style.color = 'var(--green)';
+    } else {
+        r.innerHTML = '❌ Qaytadan urinib ko\'ring'; r.style.color = 'var(--red)';
+    }
+}
+
+/* ── ARENA ── */
+let duelInterval;
+function resetArena() {
+    document.getElementById('arena-search').style.display = 'block';
+    document.getElementById('arena-duel').style.display   = 'none';
+    clearInterval(duelInterval);
+}
+function startDuel() {
+    document.getElementById('arena-search').style.display = 'none';
+    document.getElementById('arena-duel').style.display   = 'block';
+    let t = 30;
+    const el = document.getElementById('duel-timer');
+    duelInterval = setInterval(() => {
+        t--;
+        el.textContent = t;
+        if (t <= 0) { clearInterval(duelInterval); alert("Vaqt tugadi! O'yin yakunlandi."); resetArena(); }
+    }, 1000);
+}
+function duelAnswer(btn, type) {
+    document.querySelectorAll('#arena-duel .option-btn').forEach(b => b.style.pointerEvents='none');
+    if (type === 'correct') { btn.classList.add('correct'); }
+    else                    { btn.classList.add('wrong'); }
+    clearInterval(duelInterval);
+    setTimeout(() => alert(type === 'correct' ? '✅ To\'g\'ri! +50 🪙' : '❌ Noto\'g\'ri. Raqib utib ketdi.'), 400);
+}
+
+/* ── SPEAKING ── */
+let isRecording = false;
+function toggleRecording() {
+    isRecording = !isRecording;
+    const btn    = document.getElementById('speak-btn');
+    const status = document.getElementById('speak-status');
+    const bars   = document.querySelectorAll('#waveform .wave-bar');
+    if (isRecording) {
+        btn.classList.add('recording');
+        status.textContent = '🔴 Yozilmoqda...';
+        bars.forEach((b,i) => { b.classList.add('anim'); b.style.animationDelay = (i*0.15)+'s'; });
+    } else {
+        btn.classList.remove('recording');
+        status.textContent = 'Bosib gapiring';
+        bars.forEach(b => b.classList.remove('anim'));
+    }
+}
+
+/* ── TABS ── */
+function switchTab(el) {
+    el.closest('.tab-bar').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+}
+
+/* ── MEMORY CARD (simplified) ── */
+function flipCard(card, front, back) {
+    card.classList.toggle('flipped');
+    card.querySelector('span').textContent = card.classList.contains('flipped') ? front : '?';
+}
+function selectMemOption(btn, word) {
+    document.querySelectorAll('#screen-game-memory .option-btn').forEach(b=>b.classList.remove('correct','wrong'));
+    if (word === 'apple' || word === 'banana' || word === 'carrot') {
+        btn.classList.add('correct');
+    } else { btn.classList.add('wrong'); }
+}
+
+// Start at login
+navigateTo('login');
+</script>
+</body>
+</html>
